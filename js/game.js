@@ -44,6 +44,8 @@
 		_partsButton: null,
 		_missionsButton: null,
 		
+		_grid: [],
+		
 		init: function() {
 			this._menuButton = new $.Engine.UI.Button(CGRectMake(10, 10, 105, 24));
 			this._menuButton.text = "Menu";

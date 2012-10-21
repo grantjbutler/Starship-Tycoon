@@ -348,26 +348,37 @@
 	$.Engine.UI.Button = $.Engine.Events.extend({
 		frame: CGRectMakeZero(),
 		
-		text: "",
+		_text: "",
+		_textMeasurements: { width: 0, height: 0 },
 		
 		_font: null,
-		fontSize: 18,
+		_fontSize: 18,
 		
 		highlighted: false,
 		hovered: false,
 		_mouseDown: false,
 		
+		_measureText: function() {
+			if(!this._font.loaded) {
+				return;
+			}
+			
+			this._textMeasurements = this._font.measureText(this.text, this.fontSize);
+		},
+		
 		init: function(frame) {
 			this.frame = frame || CGRectMakeZero();
 			
 			this.font = "Volter";
+			this._font.onload = function() {
+				this._measureText();
+			}.bind(this);
 		},
 		
 		render: function(ctx) {
-			// TODO: Replace this with button stylings.
-			
 			CGContextSaveGState(ctx);
 			
+			// TODO: Replace this with button stylings.
 			if(this.highlighted) {
 				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(0, 0, 1, 1.0));
 			} else if(this.hovered) {
@@ -381,7 +392,7 @@
 			if(this.text.length && this._font && this._font.loaded) {
 				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(0, 0, 0, 1.0));
 				
-				var textSize = this._font.measureText(this.text, this.fontSize);
+				var textSize = this._textMeasurements;
 				
 				var origin = CGPointMake(CGRectGetMinX(this.frame) + ROUND((CGRectGetWidth(this.frame) - textSize.width) / 2.0), CGRectGetMinY(this.frame) + ROUND((CGRectGetHeight(this.frame) - textSize.height) / 2.0));
 				
@@ -422,5 +433,21 @@
 		this._font.src = this._font.fontFamily;
 	}, get: function() {
 		return this._font.fontFamily
+	}});
+	
+	Object.defineProperty($.Engine.UI.Button.prototype, 'text', { set: function(text) {
+		this._text = text;
+		
+		this._measureText();
+	}, get: function() {
+		return this._text;
+	}});
+	
+	Object.defineProperty($.Engine.UI.Button.prototype, 'fontSize', { set: function(size) {
+		this._fontSize = size;
+		
+		this.measureText();
+	}, get: function() {
+		return this._fontSize;
 	}});
 })(window);
