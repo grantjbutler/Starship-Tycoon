@@ -1549,3 +1549,60 @@ function CGBitmapGraphicsContextCreate()
     context.DOMElement = DOMElement;
     return context;
 }
+
+
+// GRANT'S ADDITIONS
+
+function CGContextDrawTiledImage(c, rect, img) {
+	if(arguments.length == 4) {
+		sRect = rect;
+		rect = img;
+		img = arguments[3];
+		
+		// var canv = document.createElement("canvas");
+		// canv.width = sRect.size.width;
+		// canv.height = sRect.size.height;
+		
+		// context = canv.getContext("2d");
+		// CGContextDrawImage(context, sRect, CGRectMake(0, 0, sRect.size.width, sRect.size.height), img);
+		//CGContextDrawImage(c, sRect, CGRectMake(0, 0, sRect.size.width, sRect.size.height), img);
+		
+		//img = canv;
+	}
+	
+	var size = CGSizeMake(img.width, img.height);
+	
+	if(typeof sRect == "undefined")
+		sRect = CGRectMake(0, 0, size.width, size.height);
+	
+	totalWidth = 0;
+	
+	while(totalWidth < rect.size.width) {
+		if((totalWidth + sRect.size.width) > rect.size.width) {
+			newWidth = rect.size.width - totalWidth;
+			
+			oldWidth = sRect.size.width;
+			sRect.size.width = newWidth;
+			
+			c.drawImage(img, sRect.origin.x, sRect.origin.y, sRect.size.width, sRect.size.height, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+			sRect.size.width = oldWidth;
+			break;
+		} else {
+			c.drawImage(img, sRect.origin.x, sRect.origin.y, sRect.size.width, sRect.size.height, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+			totalWidth += sRect.size.width;
+		}
+	}
+		
+		// totalHeight += sRect.size.height;
+	// }
+	
+	// CGContextSaveGState(c);
+	
+	// patt = c.createPattern(img, "repeat");
+	// CGContextSetFillColor(c, patt);
+	
+	// console.log(rect);
+	// CGContextFillRect(c, rect);
+	
+	// CGContextRestoreGState(c);
+}
