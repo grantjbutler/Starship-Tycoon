@@ -9,6 +9,10 @@
 				margin: 0 auto;
 			}
 			
+			#preloader {
+				display: none;
+			}
+			
 			@font-face {
 				font-family: Volter;
 				src: url('fonts/Volter__28Goldfish_29.ttf');
@@ -18,6 +22,16 @@
 	<body>
 		<div id="container">
 			<canvas width="800" height="600" id="canvas"></canvas>
+		</div>
+		
+		<div id="preloader">
+			<img src="img/game_background.png" id="img-game_background">
+			<img src="img/game_box.png" id="img-game_box">
+			<img src="img/game_button.png" id="img-game_button">
+			<img src="img/game_button_pressed.png" id="img-game_button_pressed">
+			<img src="img/game_engine.png" id="img-game_engine">
+			<img src="img/game_thruster.png" id="img-game_thruster">
+			<img src="img/game_weapon.png" id="img-game_weapon">
 		</div>
 		
 		<!-- <script src="https://raw.github.com/eriwen/javascript-stacktrace/master/stacktrace.js"></script> -->
