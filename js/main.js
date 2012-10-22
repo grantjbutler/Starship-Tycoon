@@ -67,6 +67,7 @@
 		_isRunning: false,
 		_startTime: $.mozAnimationStartTime || Date.now(),
 		_currentScreen: null,
+		_currentOverlay: null,
 		
 		_renderFPS: false,
 		_fps: 0,
@@ -87,6 +88,16 @@
 				CGContextClearRect($.Engine.ctx, CGRectMake(0, 0, $.Engine.ctx.canvas.width, $.Engine.ctx.canvas.height));
 				
 				$.Engine._currentScreen.render(delta, $.Engine.ctx);
+				
+				CGContextRestoreGState($.Engine.ctx);
+			}
+			
+			if($.Engine._currentOverlay != null) {
+				$.Engine._currentOverlay.update(delta);
+				
+				CGContextSaveGState($.Engine.ctx);
+				
+				$.Engine._currentOverlay.render(delta, $.Engine.ctx);
 				
 				CGContextRestoreGState($.Engine.ctx);
 			}
@@ -146,6 +157,14 @@
 		
 		setScreen: function(screen) {
 			$.Engine._currentScreen = screen;
+		},
+		
+		showOverlay: function(overlay) {
+			$.Engine._currentOverlay = overlay;
+		},
+		
+		hideOverlay: function() {
+			$.Engine._currentOverlay = null;
 		},
 		
 		keyDown: function(e) {
@@ -297,8 +316,19 @@
 	});
 	
 	$.Engine.Overlay = Class.extend({
+		frame: CGRectMakeZero(),
+		
 		render: function(delta, ctx) {
+			if(CGRectIsEmpty(this.frame)) {
+				return;
+			}
 			
+			CGContextSaveGState(ctx);
+			
+			CGContextSetFillColor(ctx, CGColorCreateGenericRGB(0.0, 0.0, 0.0, 0.5));
+			CGContextFillRect(ctx, this.frame);
+			
+			CGContextRestoreGState(ctx);
 		},
 		
 		update: function(delta) {
@@ -358,6 +388,9 @@
 		hovered: false,
 		_mouseDown: false,
 		
+		_buttonBG: null,
+		_buttonBGSelected: null,
+		
 		_measureText: function() {
 			if(!this._font.loaded) {
 				return;
@@ -373,24 +406,30 @@
 			this._font.onload = function() {
 				this._measureText();
 			}.bind(this);
+			
+			this._buttonBG = new Image();
+			this._buttonBG.src = "img/game_button.png";
+			
+			this._buttonBGSelected = new Image();
+			this._buttonBGSelected.src = "img/game_button_pressed.png";
 		},
 		
 		render: function(ctx) {
 			CGContextSaveGState(ctx);
 			
 			// TODO: Replace this with button stylings.
+			var img = this._buttonBG;
+			
 			if(this.highlighted) {
-				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(0, 0, 1, 1.0));
-			} else if(this.hovered) {
-				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(1, 0, 1, 1.0));
-			} else {
-				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(1, 0, 0, 1.0));
+				img = this._buttonBGSelected;
 			}
 			
-			CGContextFillRect(ctx, this.frame);
+			ctx.drawImage(img, 0, 0, 12, img.height, this.frame.origin.x, this.frame.origin.y, 12, this.frame.size.height);
+			ctx.drawImage(img, img.width - 12, 0, 12, img.height, this.frame.origin.x + this.frame.size.width - 12, this.frame.origin.y, 12, this.frame.size.height);
+			CGContextDrawTiledImage(ctx, CGRectMake(13, 0, 1, img.height), CGRectInset(this.frame, 12, 0), img);
 			
 			if(this.text.length && this._font && this._font.loaded) {
-				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(0, 0, 0, 1.0));
+				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(1, 1, 1, 1.0));
 				
 				var textSize = this._textMeasurements;
 				
@@ -446,7 +485,7 @@
 	Object.defineProperty($.Engine.UI.Button.prototype, 'fontSize', { set: function(size) {
 		this._fontSize = size;
 		
-		this.measureText();
+		this._measureText();
 	}, get: function() {
 		return this._fontSize;
 	}});
