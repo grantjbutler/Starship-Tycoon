@@ -13,6 +13,8 @@
 			if(__SHARED_GAME == null) {
 				__SHARED_GAME = new __GAME();
 			}
+			
+			return __SHARED_GAME;
 		};
 		
 		return __GAME;
@@ -20,25 +22,28 @@
 	
 	var MainScreen = $.Engine.Screen.extend({
 		_startButton: null,
+		_startBG: null,
 		
 		init: function() {
-			this._startButton = new $.Engine.UI.Button(CGRectMake(300, 350, 200, 63));
+			this._startButton = new $.Engine.UI.Button(CGRectMake(300, 400, 200, 63));
 			this._startButton.text = "Start Game";
 			this._startButton.addEventListener('clicked', function() {
 				$.Engine.setScreen(new GameScreen());
 			});
+			
+			this._startBG = new Image();
+			this._startBG.src = "img/game_startpage.png";
 		},
 		
 		render: function(delta, ctx) {
 			// TODO: Replace this with image.
 			var rect = CGRectMake(0, 0, ctx.canvas.width, ctx.canvas.height);
-			CGContextSetFillColor(ctx, CGColorCreateGenericRGB(0, 1, 0, 1.0));
-			CGContextFillRect(ctx, rect);
+			CGContextDrawImage(ctx, rect, { _image: this._startBG });
 			
 			ctx.font = '45px Volter';
 			var textSize = ctx.measureText('Starship Tycoon');
-			var textOrigin = CGPointMake(rect.origin.x + ROUND((rect.size.width - textSize.width) / 2.0), 60);
-			CGContextSetFillColor(ctx, CGColorCreateGenericRGB(0, 0, 1, 1.0));
+			var textOrigin = CGPointMake(rect.origin.x + ROUND((rect.size.width - textSize.width) / 2.0), 150);
+			CGContextSetFillColor(ctx, CGColorCreateGenericRGB(0.9, 0.9, 0.9, 1.0));
 			
 			ctx.fillText('Starship Tycoon', textOrigin.x, textOrigin.y);
 			
@@ -70,9 +75,24 @@
 		init: function() {
 			this._menuButton = new $.Engine.UI.Button(CGRectMake(10, 10, 125, 35));
 			this._menuButton.text = "Menu";
+/*
+			this._menuButton.addEventListener('clicked', function() {
+				$.Engine.showOverlay(new MenuOverlay());
+			});
+*/
 			
 			this._partsButton = new $.Engine.UI.Button(CGRectMake(10, 55, 125, 35));
 			this._partsButton.text = "Parts";
+			this._partsButton.addEventListener('clicked', function() {
+				if($.Engine._currentOverlay instanceof PartsOverlay) {
+					$.Engine.hideOverlay();
+				} else {
+					var overlay = new PartsOverlay();
+					overlay.frame = CGRectMake(145, 0, 655, 600);
+					
+					$.Engine.showOverlay(overlay);
+				}
+			});
 			
 			this._missionsButton = new $.Engine.UI.Button(CGRectMake(10, 100, 125, 35));
 			this._missionsButton.text = "Missions";
@@ -109,6 +129,14 @@
 			this._partsButton.mouseUp(point);
 			this._missionsButton.mouseUp(point);
 		}
+	});
+	
+	var PartsOverlay = $.Engine.Overlay.extend({
+		/*
+render: function(ctx) {
+			this._super(ctx);
+		}
+*/
 	});
 	
 	window.addEventListener('load', function() {
