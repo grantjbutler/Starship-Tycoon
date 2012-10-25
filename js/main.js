@@ -314,6 +314,7 @@
 		
 		highlighted: false,
 		hovered: false,
+		disabled: false,
 		_mouseDown: false,
 		
 		_buttonBG: null,
@@ -389,6 +390,10 @@
 				img = this._buttonBGSelected;
 			}
 			
+			if(this.disabled) {
+				CGContextSetAlpha(ctx, 0.5);
+			}
+			
 			ctx.drawImage(img, 0, 0, 12, img.height, this.frame.origin.x, this.frame.origin.y, 12, this.frame.size.height);
 			ctx.drawImage(img, img.width - 12, 0, 12, img.height, this.frame.origin.x + this.frame.size.width - 12, this.frame.origin.y, 12, this.frame.size.height);
 			CGContextDrawTiledImage(ctx, CGRectMake(13, 0, 1, img.height), CGRectInset(this.frame, 12, 0), img);
@@ -409,6 +414,10 @@
 		},
 		
 		mouseMove: function(point) {
+			if(this.disabled) {
+				return;
+			}
+			
 			this.hovered = CGRectContainsPoint(this.frame, point);
 			
 			if(this._mouseDown) {
@@ -417,11 +426,19 @@
 		},
 		
 		mouseDown: function(point) {
+			if(this.disabled) {
+				return;
+			}
+			
 			this.highlighted = CGRectContainsPoint(this.frame, point);
 			this._mouseDown = true;
 		},
 		
 		mouseUp: function(point) {
+			if(this.disabled) {
+				return;
+			}
+			
 			if(this.highlighted && this._mouseDown) {
 				this.fireEvent('click');
 			}

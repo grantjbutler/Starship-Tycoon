@@ -1585,11 +1585,10 @@ function CGContextDrawTiledImage(c, rect, img) {
 			sRect.size.width = newWidth;
 			
 			c.drawImage(img, sRect.origin.x, sRect.origin.y, sRect.size.width, sRect.size.height, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
-			sRect.size.width = oldWidth;
-			break;
 		} else {
-			c.drawImage(img, sRect.origin.x, sRect.origin.y, sRect.size.width, sRect.size.height, rect.origin.x, rect.origin.y, rect.size.width, rect.size.height);
+			c.drawImage(img, sRect.origin.x, sRect.origin.y, sRect.size.width, sRect.size.height, rect.origin.x, rect.origin.y, sRect.size.width, rect.size.height);
 			totalWidth += sRect.size.width;
+			rect.origin.x += sRect.size.width;
 		}
 	}
 		
