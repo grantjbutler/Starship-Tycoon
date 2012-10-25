@@ -235,8 +235,14 @@
 				var mouseOrigin = CGPointMakeZero();
 				mouseOrigin.x = MAX(FLOOR((this._mousePosition.x - 161) / 48) * 48, 0);
 				mouseOrigin.y = MAX(FLOOR((this._mousePosition.y - 13) / 48) * 48, 0);
-				mouseOrigin.x = MIN(mouseOrigin.x, 528);
-				mouseOrigin.y = MIN(mouseOrigin.y, 528);
+				
+				if(mouseOrigin.x + Game.sharedGame()._tempPart.size.width * 48 > 624) {
+					mouseOrigin.x = 624 - Game.sharedGame()._tempPart.size.width * 48;
+				}
+				
+				if(mouseOrigin.y + Game.sharedGame()._tempPart.size.height * 48 > 576) {
+					mouseOrigin.y = 576 - Game.sharedGame()._tempPart.size.height * 48;
+				}
 				
 				CGContextFillRect(ctx, CGRectMake(mouseOrigin.x, mouseOrigin.y, Game.sharedGame()._tempPart.size.width * 48, Game.sharedGame()._tempPart.size.height * 48));
 				
@@ -271,6 +277,8 @@
 			this._menuButton.mouseUp(point);
 			this._partsButton.mouseUp(point);
 			this._missionsButton.mouseUp(point);
+			
+/* 			if(CGRectContainsPoint(CGRectMake(161, 13, 576, )) */
 		}
 	});
 	
