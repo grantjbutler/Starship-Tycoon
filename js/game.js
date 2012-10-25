@@ -49,6 +49,12 @@
 				image: "img/game_weapon.png",
 				cost: 300,
 				size: CGSizeMake(2, 1)
+			},
+			{
+				name: "Lasers",
+				image: "img/game_weapon1.png",
+				cose: 150,
+				size: CGSizeMake(2, 1)
 			}
 		],
 		
@@ -64,6 +70,12 @@
 				image: "img/game_engine.png",
 				cost: 225,
 				size: CGSizeMake(2, 1)
+			},
+			{
+				name: "Thrusters",
+				image: "img/game_thruster2.png",
+				cost: 150,
+				size: CGSizeMake(1, 2)
 			}
 		],
 	}
