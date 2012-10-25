@@ -158,9 +158,13 @@
 				return;
 			}
 			
-			var firstResponder = __.Engine._currentOverlay || __.Engine._currentScreen;
-			
 			var origin = CGPointMake(e.clientX - e.target.offsetLeft, e.clientY - e.target.offsetTop);
+			
+			var firstResponder = __.Engine._currentScreen;
+			
+			if(__.Engine._currentOverlay && CGRectContainsPoint(__.Engine._currentOverlay.frame, origin)) {
+				firstResponder = __.Engine._currentOverlay;
+			}
 			
 			if(e.button == 2) { // Right click
 				if('rightMouseDown' in firstResponder) {
@@ -189,9 +193,13 @@
 				return;
 			}
 			
-			var firstResponder = __.Engine._currentOverlay || __.Engine._currentScreen;
-			
 			var origin = CGPointMake(e.clientX - e.target.offsetLeft, e.clientY - e.target.offsetTop);
+			
+			var firstResponder = __.Engine._currentScreen;
+			
+			if(__.Engine._currentOverlay && CGRectContainsPoint(__.Engine._currentOverlay.frame, origin)) {
+				firstResponder = __.Engine._currentOverlay;
+			}
 			
 			if(e.button == 2) { // Right click
 				if('rightMouseMove' in firstResponder) {
@@ -220,10 +228,14 @@
 				return;
 			}
 			
-			var firstResponder = __.Engine._currentOverlay || __.Engine._currentScreen;
-			
 			var origin = CGPointMake(e.clientX - e.target.offsetLeft, e.clientY - e.target.offsetTop);
 			
+			var firstResponder = __.Engine._currentScreen;
+			
+			if(__.Engine._currentOverlay && CGRectContainsPoint(__.Engine._currentOverlay.frame, origin)) {
+				firstResponder = __.Engine._currentOverlay;
+			}
+						
 			if(e.button == 2) { // Right click
 				if('rightMouseUp' in firstResponder) {
 					firstResponder.rightMouseUp(origin);
@@ -286,47 +298,6 @@
 			
 		}
 	});
-	
-/*
-	__.Engine.Events = Class.extend({
-		_events: {},
-		
-		addEventListener: function(event, listener) {
-			if(!(event in this._events)) {
-				this._events[event] = [];
-			}
-			
-			this._events[event].push(listener);
-		},
-		
-		removeEventListener: function(event, listener) {
-			if(!(event in this._events)) {
-				return;
-			}
-			
-			var index = this._events[event].indexOf(listener);
-			
-			if(index != -1) {
-				this._events[event].splice(index, 1);
-			}
-		},
-		
-		triggerEvent: function(event) {
-			if(!(event in this._events)) {
-				return;
-			}
-			
-			var self = this;
-			
-			var args = Array.prototype.slice.call(arguments);
-			args.splice(0, 1);
-			
-			this._events[event].forEach(function(item) {
-				item.apply(self, args);
-			});
-		}
-	});
-*/
 	
 	__.Engine.UI = {};
 	
