@@ -368,6 +368,24 @@
 				if(Game.sharedGame()._currentMission.complete()) {
 					Game.sharedGame()._currentMission = null;
 					Game.sharedGame().resetParts();
+					
+					var completedAllMissions = true;
+					
+					for(var i = 0; i < Missions.length; i++) {
+						if(!Missions[i].completed) {
+							completedAllMissions = false;
+							
+							break;
+						}
+					}
+					
+					if(completedAllMissions) {
+						if(confirm("Congratulations! You beat the game with a high score of " + Game.sharedGame()._score + ". Would you like to play again?")) {
+							location.reload();
+						} else {
+							__.Engine._isRunning = false;
+						}
+					}
 				} else {
 					alert("You haven't met all the requirements yet. Try again!");
 				}
@@ -638,6 +656,10 @@
 			var self = this;
 			
 			Missions.forEach(function(mission) {
+				if(mission.completed) {
+					return;
+				}
+				
 				var view = new MissionView(CGRectMake(0, 0, 250, 150));
 				view.title = mission.title;
 				view.description = mission.description;
