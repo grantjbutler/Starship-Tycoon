@@ -53,7 +53,7 @@
 			{
 				name: "Lasers",
 				image: "img/game_weapon1.png",
-				cose: 150,
+				cost: 150,
 				size: CGSizeMake(2, 1)
 			}
 		],
@@ -75,7 +75,7 @@
 				name: "Thrusters",
 				image: "img/game_thruster2.png",
 				cost: 150,
-				size: CGSizeMake(1, 2)
+				size: CGSizeMake(2, 2)
 			}
 		],
 	}
@@ -84,6 +84,7 @@
 		var __GAME = new Class({
 			_parts: [],
 			_tempPart: null,
+			_currency: 1000,
 			
 			initialize: function() {
 				
@@ -206,6 +207,8 @@
 				if(__.Engine._currentOverlay instanceof PartsOverlay) {
 					__.Engine.hideOverlay();
 				} else {
+					Game.sharedGame()._tempPart = null;
+					
 					var overlay = new PartsOverlay(CGRectMake(145, 0, 655, 600));
 					
 					__.Engine.showOverlay(overlay);
@@ -359,7 +362,7 @@
 				if(this._price.toString().length) {
 					var textSize = this._priceMeasurements;
 					
-					var origin = CGPointMake(CGRectGetMinX(this.frame) + ROUND((CGRectGetWidth(this.frame) - textSize.width) / 2.0), CGRectGetMinY(this.frame) + CGRectGetHeight(this.frame) - textSize.height);
+					var origin = CGPointMake(CGRectGetMinX(this.frame) + ROUND((CGRectGetWidth(this.frame) - textSize.width) / 2.0), CGRectGetMaxY(this.frame) - textSize.height);
 					
 					ctx.fillText(this._price, origin.x, origin.y - 2);
 				}
@@ -367,7 +370,11 @@
 				if(this._title.length) {
 					var textSize = this._titleMeasurements;
 					
-					origin = CGPointMake(CGRectGetMinX(this.frame) + ROUND((CGRectGetWidth(this.frame) - textSize.width) / 2.0), CGRectGetMinY(this.frame) + CGRectGetHeight(this.frame) - textSize.height - (CGRectGetHeight(this.frame) - origin.y) - 3);
+					origin = CGPointMake(CGRectGetMinX(this.frame) + ROUND((CGRectGetWidth(this.frame) - textSize.width) / 2.0), CGRectGetMaxY(this.frame) - textSize.height);
+					
+					if(this._priceMeasurements) {
+						origin.y -= this._priceMeasurements.height + 3;
+					}
 					
 					ctx.fillText(this._title, origin.x, origin.y - 2);
 				}
@@ -408,10 +415,17 @@
 			var padding = FLOOR((this.frame.size.width - 250 * numPartsPerRow) / (numPartsPerRow + 1));
 			
 			var x = this.frame.origin.x + padding;
+			var y = this.frame.origin.y + 10;
 			
 			this._parts.forEach(function(part) {
 				part.frame.origin.x = x;
-				x += 250 + padding;
+				part.frame.origin.y = y;
+				x += 125 + padding;
+				
+				if(x - self.frame.origin.x > self.frame.size.width) {
+					y += 175 + 10;
+					x = self.frame.origin.x + padding;
+				}
 			});
 		},
 		
