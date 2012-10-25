@@ -107,7 +107,7 @@
 					return false;
 				}
 				
-				this._parts.push(part);
+				this._parts.push(newPart);
 				
 				return true;
 			},
@@ -225,12 +225,24 @@
 		render: function(delta, ctx) {
 			CGContextDrawImage(ctx, CGRectMake(0, 0, 800, 600), { _image: this._background });
 			
+			CGContextSaveGState(ctx);
+				
+			CGContextTranslateCTM(ctx, 161, 13);
+			
+			console.log(Game.sharedGame()._parts);
+			
+			Game.sharedGame()._parts.forEach(function(part) {
+				console.log(part);
+				
+				part.render(ctx);
+			});
+			
+			CGContextRestoreGState(ctx);
+			
 			if(Game.sharedGame()._tempPart) {
 				CGContextSaveGState(ctx);
 				
 				CGContextTranslateCTM(ctx, 161, 13);
-				
-				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(1.0, 0.5, 0.0, 0.5));
 				
 				var mouseOrigin = CGPointMakeZero();
 				mouseOrigin.x = MAX(FLOOR((this._mousePosition.x - 161) / 48) * 48, 0);
@@ -242,6 +254,20 @@
 				
 				if(mouseOrigin.y + Game.sharedGame()._tempPart.size.height * 48 > 576) {
 					mouseOrigin.y = 576 - Game.sharedGame()._tempPart.size.height * 48;
+				}
+				
+				Game.sharedGame()._tempPart.origin = CGPointMake(FLOOR(mouseOrigin.x / 48), FLOOR(mouseOrigin.y / 48));
+				
+				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(1.0, 0.5, 0.0, 0.5));
+				
+				for(var i = 0; i < Game.sharedGame()._parts.length; i++) {
+					var part = Game.sharedGame()._parts[i];
+					
+					if(part.intersects(Game.sharedGame()._tempPart)) {
+						CGContextSetFillColor(ctx, CGColorCreateGenericRGB(1.0, 0.0, 0.0, 0.5));
+						
+						break;
+					}
 				}
 				
 				CGContextFillRect(ctx, CGRectMake(mouseOrigin.x, mouseOrigin.y, Game.sharedGame()._tempPart.size.width * 48, Game.sharedGame()._tempPart.size.height * 48));
@@ -278,7 +304,31 @@
 			this._partsButton.mouseUp(point);
 			this._missionsButton.mouseUp(point);
 			
-/* 			if(CGRectContainsPoint(CGRectMake(161, 13, 576, )) */
+			if(this._mousePosition.x - 161 >= 0 && this._mousePosition.y - 13 >= 0) {
+				var mouseOrigin = CGPointMakeZero();
+				mouseOrigin.x = MAX(FLOOR((this._mousePosition.x - 161) / 48), 0);
+				mouseOrigin.y = MAX(FLOOR((this._mousePosition.y - 13) / 48), 0);
+				
+				if(mouseOrigin.x + Game.sharedGame()._tempPart.size.width > 13) {
+					mouseOrigin.x = 13 - Game.sharedGame()._tempPart.size.width;
+				}
+				
+				if(mouseOrigin.y + Game.sharedGame()._tempPart.size.height > 12) {
+					mouseOrigin.y = 12 - Game.sharedGame()._tempPart.size.height;
+				}
+				
+				var part = Game.sharedGame()._tempPart;
+				
+				part.origin = mouseOrigin;
+				
+				console.log(part);
+				
+				if(Game.sharedGame().addPart(part)) {
+					Game.sharedGame()._tempPart = null;
+				} else {
+					Game.sharedGame()._tempPart.origin = CGPointMakeZero();
+				}
+			}
 		}
 	});
 	
