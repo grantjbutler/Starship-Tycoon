@@ -1,10 +1,54 @@
 (function(__) {
+	var Part = new Class({
+		size: CGSizeMakeZero(),
+		origin: CGPointMakeZero(),
+		
+		_image: null,
+		
+		Attributes: {
+			imgSrc: {
+				set: function(src) {
+					this._image = new Image();
+					this._image.src = src;
+				},
+				get: function() {
+					return this._image.src;
+				}
+			}
+		},
+		
+		initialize: function(part) {
+			this.size = part.size;
+			this.imgSrc = part.image; // TODO: Change this for a properly sized image.
+		},
+		
+		intersects: function(part) {
+			if(!typeOf(part, Part)) {
+				return false;
+			}
+			
+			var myFrame = CGRectMake(this.origin.x, this.origin.y, this.size.width, this.size.height);
+			var otherFrame = CGRectMake(part.origin.x, part.origin.y, part.size.width, part.size.height);
+			
+			return CGRectIntersectsRect(myFrame, otherFrame);
+		},
+		
+		render: function(ctx) {
+			CGContextSaveGState(ctx);
+			
+			CGContextDrawImage(ctx, CGRectMake(this.origin.x * 48, this.origin.y * 48, this.size.width * 48, this.size.height * 48), this);
+			
+			CGContextRestoreGState(ctx);
+		}
+	});
+	
 	var Parts = {
 		Weapons: [
 			{
 				name: "Photon Torpedoes",
 				image: "img/game_weapon.png",
-				cost: 300
+				cost: 300,
+				size: CGSizeMake(2, 1)
 			}
 		],
 		
@@ -12,20 +56,55 @@
 			{
 				name: "Impulse Engines",
 				image: "img/game_thruster.png",
-				cost: 100
+				cost: 100,
+				size: CGSizeMake(2, 1)
 			},
 			{
 				name: "Sublight Engines",
 				image: "img/game_engine.png",
-				cost: 225
+				cost: 225,
+				size: CGSizeMake(2, 1)
 			}
 		],
 	}
 	
 	var Game = (function() {
 		var __GAME = new Class({
+			_parts: [],
+			_tempPart: null,
+			
 			initialize: function() {
 				
+			},
+			
+			addPart: function(newPart) {
+				var foundPart = false;
+				
+				for(var i = 0; i < this._parts.length; i++) {
+					var part = this._parts[i];
+					
+					if(part.intersects(newPart)) {
+						foundPart = true;
+						
+						break;
+					}
+				}
+				
+				if(foundPart) {
+					return false;
+				}
+				
+				this._parts.push(part);
+				
+				return true;
+			},
+			
+			removePart: function(part) {
+				
+			},
+			
+			resetParts: function() {
+				this._parts = [];
 			}
 		});
 		
@@ -94,6 +173,8 @@
 		_partsButton: null,
 		_missionsButton: null,
 		
+		_mousePosition: CGPointMakeZero(),
+		
 		_background: null,
 		
 		_grid: [],
@@ -129,6 +210,26 @@
 		render: function(delta, ctx) {
 			CGContextDrawImage(ctx, CGRectMake(0, 0, 800, 600), { _image: this._background });
 			
+			if(Game.sharedGame()._tempPart) {
+				CGContextSaveGState(ctx);
+				
+				CGContextTranslateCTM(ctx, 161, 13);
+				
+				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(1.0, 0.5, 0.0, 0.5));
+				
+				var mouseOrigin = CGPointMakeZero();
+				mouseOrigin.x = MAX(FLOOR((this._mousePosition.x - 161) / 48) * 48, 0);
+				mouseOrigin.y = MAX(FLOOR((this._mousePosition.y - 13) / 48) * 48, 0);
+				mouseOrigin.x = MIN(mouseOrigin.x, 528);
+				mouseOrigin.y = MIN(mouseOrigin.y, 528);
+				
+				CGContextFillRect(ctx, CGRectMake(mouseOrigin.x, mouseOrigin.y, Game.sharedGame()._tempPart.size.width * 48, Game.sharedGame()._tempPart.size.height * 48));
+				
+				CGContextRestoreGState(ctx);
+				
+				CGContextDrawImage(ctx, CGRectMake(this._mousePosition.x - 10, this._mousePosition.y - 24, Game.sharedGame()._tempPart.size.width * 48, Game.sharedGame()._tempPart.size.height * 48), Game.sharedGame()._tempPart);
+			}
+			
 			CGContextSetFillColor(ctx, CGColorCreateGenericRGB(0.85, 0.85, 0.85, 1.0));
 			CGContextFillRect(ctx, CGRectMake(0, 0, 145, ctx.canvas.height));
 			
@@ -147,6 +248,8 @@
 			this._menuButton.mouseMove(point);
 			this._partsButton.mouseMove(point);
 			this._missionsButton.mouseMove(point);
+			
+			this._mousePosition = point;
 		},
 		
 		mouseUp: function(point) {
@@ -219,7 +322,9 @@
 		},
 		
 		initialize: function() {
-			this.parent(CGRectMake(0, 0, 125, 250));
+			this.parent(CGRectMake(0, 0, 125, 175));
+			
+			this.fontSize = 9;
 		},
 		
 		render: function(ctx) {
@@ -237,18 +342,23 @@
 				ctx.font = this.fontSize + "px " + this.font;
 				ctx.textBaseline = "top";
 				
-				if(this._title.length) {
-					
-				}
+				var origin = CGPointMakeZero();
 				
-				if(this._price.length) {
+				if(this._price.toString().length) {
 					var textSize = this._priceMeasurements;
 					
-					var origin = CGPointMake(CGRectGetMinX(this.frame) + ROUND((CGRectGetWidth(this.frame) - textSize.width) / 2.0), CGRectGetMinY(this.frame) + ROUND((CGRectGetHeight(this.frame) - textSize.height) / 2.0));
+					var origin = CGPointMake(CGRectGetMinX(this.frame) + ROUND((CGRectGetWidth(this.frame) - textSize.width) / 2.0), CGRectGetMinY(this.frame) + CGRectGetHeight(this.frame) - textSize.height);
 					
-					ctx.fillText(this.text, origin.x, origin.y - 2);
+					ctx.fillText(this._price, origin.x, origin.y - 2);
 				}
 				
+				if(this._title.length) {
+					var textSize = this._titleMeasurements;
+					
+					origin = CGPointMake(CGRectGetMinX(this.frame) + ROUND((CGRectGetWidth(this.frame) - textSize.width) / 2.0), CGRectGetMinY(this.frame) + CGRectGetHeight(this.frame) - textSize.height - (CGRectGetHeight(this.frame) - origin.y) - 3);
+					
+					ctx.fillText(this._title, origin.x, origin.y - 2);
+				}
 			}
 			
 			CGContextRestoreGState(ctx);
@@ -262,6 +372,8 @@
 		_activeTab: "",
 		_parts: [],
 		
+		_mousePosition: null,
+		
 		_setActiveTab: function(text) {
 			var self = this;
 			
@@ -274,6 +386,9 @@
 				partButton.price = part.cost;
 				partButton.title = part.name;
 				partButton.imgSrc = part.image;
+				partButton.addEvent('click', function() {
+					self._addPart(part);
+				});
 				self._parts.push(partButton);
 			});
 			
@@ -286,6 +401,16 @@
 				part.frame.origin.x = x;
 				x += 250 + padding;
 			});
+		},
+		
+		_addPart: function(part) {
+			Game.sharedGame()._tempPart = new Part(part);
+			
+			__.Engine.hideOverlay();
+			
+			if('mouseMove' in __.Engine._currentScreen) {
+				__.Engine._currentScreen.mouseMove(this._mousePosition);
+			}
 		},
 		
 		initialize: function(frame) {
@@ -347,6 +472,8 @@
 			this._parts.forEach(function(part) {
 				part.mouseMove(point);
 			});
+			
+			this._mousePosition = point;
 		},
 		
 		mouseUp: function(point) {
