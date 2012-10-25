@@ -1,8 +1,30 @@
-(function($) {
+(function(__) {
+	var Parts = {
+		Weapons: [
+			{
+				name: "Photon Torpedoes",
+				image: "img/game_weapon.png",
+				cost: 300
+			}
+		],
+		
+		Engines: [
+			{
+				name: "Impulse Engines",
+				image: "img/game_thruster.png",
+				cost: 100
+			},
+			{
+				name: "Sublight Engines",
+				image: "img/game_engine.png",
+				cost: 225
+			}
+		],
+	}
 	
 	var Game = (function() {
-		var __GAME = Class.extend({
-			init: function() {
+		var __GAME = new Class({
+			initialize: function() {
 				
 			}
 		});
@@ -20,15 +42,17 @@
 		return __GAME;
 	})();
 	
-	var MainScreen = $.Engine.Screen.extend({
+	var MainScreen = new Class({
+		Extends: __.Engine.Screen,
+		
 		_startButton: null,
 		_startBG: null,
 		
-		init: function() {
-			this._startButton = new $.Engine.UI.Button(CGRectMake(300, 400, 200, 63));
+		initialize: function() {
+			this._startButton = new __.Engine.UI.Button(CGRectMake(300, 400, 200, 63));
 			this._startButton.text = "Start Game";
-			this._startButton.addEventListener('clicked', function() {
-				$.Engine.setScreen(new GameScreen());
+			this._startButton.addEvent('click', function() {
+				__.Engine.setScreen(new GameScreen());
 			});
 			
 			this._startBG = new Image();
@@ -63,7 +87,9 @@
 		}
 	});
 	
-	var GameScreen = $.Engine.Screen.extend({
+	var GameScreen = new Class({
+		Extends: __.Engine.Screen,
+		
 		_menuButton: null,
 		_partsButton: null,
 		_missionsButton: null,
@@ -72,29 +98,28 @@
 		
 		_grid: [],
 		
-		init: function() {
-			this._menuButton = new $.Engine.UI.Button(CGRectMake(10, 10, 125, 35));
+		initialize: function() {
+			this._menuButton = new __.Engine.UI.Button(CGRectMake(10, 10, 125, 35));
 			this._menuButton.text = "Menu";
 /*
 			this._menuButton.addEventListener('clicked', function() {
-				$.Engine.showOverlay(new MenuOverlay());
+				__.Engine.showOverlay(new MenuOverlay());
 			});
 */
 			
-			this._partsButton = new $.Engine.UI.Button(CGRectMake(10, 55, 125, 35));
+			this._partsButton = new __.Engine.UI.Button(CGRectMake(10, 55, 125, 35));
 			this._partsButton.text = "Parts";
-			this._partsButton.addEventListener('clicked', function() {
-				if($.Engine._currentOverlay instanceof PartsOverlay) {
-					$.Engine.hideOverlay();
+			this._partsButton.addEvent('click', function() {
+				if(__.Engine._currentOverlay instanceof PartsOverlay) {
+					__.Engine.hideOverlay();
 				} else {
-					var overlay = new PartsOverlay();
-					overlay.frame = CGRectMake(145, 0, 655, 600);
+					var overlay = new PartsOverlay(CGRectMake(145, 0, 655, 600));
 					
-					$.Engine.showOverlay(overlay);
+					__.Engine.showOverlay(overlay);
 				}
 			});
 			
-			this._missionsButton = new $.Engine.UI.Button(CGRectMake(10, 100, 125, 35));
+			this._missionsButton = new __.Engine.UI.Button(CGRectMake(10, 100, 125, 35));
 			this._missionsButton.text = "Missions";
 			
 			this._background = new Image();
@@ -131,15 +156,211 @@
 		}
 	});
 	
-	var PartsOverlay = $.Engine.Overlay.extend({
-		/*
-render: function(ctx) {
-			this._super(ctx);
+	var PartButton = new Class({
+		Extends: __.Engine.UI.Button,
+		
+		Attributes: {
+			imgSrc: {
+				set: function(src) {
+					this._img = new Image();
+					this._img.src = src;
+				},
+				
+				get: function() {
+					if(this._img) {
+						return this._img.src;
+					}
+					
+					return "";
+				}
+			},
+			
+			title: {
+				set: function(title) {
+					this._title = title;
+					
+					this._measureText();
+				},
+				
+				get: function() {
+					return this._title;
+				}
+			},
+			
+			price: {
+				set: function(price) {
+					this._price = price;
+					
+					this._measureText();
+				},
+				
+				get: function() {
+					return this._price;
+				}
+			}
+		},
+		
+		_title: "",
+		_price: "",
+		_img: null,
+		
+		_titleMeasurements: null,
+		_priceMeasurements: null,
+		
+		_measureText: function() {
+			this.parent();
+			
+			if(!this._font.loaded) {
+				return;
+			}
+			
+			this._titleMeasurements = this._font.measureText(this.title, this.fontSize);
+			this._priceMeasurements = this._font.measureText(this.price, this.fontSize);
+		},
+		
+		initialize: function() {
+			this.parent(CGRectMake(0, 0, 125, 250));
+		},
+		
+		render: function(ctx) {
+			CGContextSaveGState(ctx);
+			
+			var imgRect = CGRectMake(0, 0, this._img.width, this._img.height);
+			imgRect.origin.x = this.frame.origin.x + ROUND((this.frame.size.width - imgRect.size.width) / 2.0);
+			imgRect.origin.y = this.frame.origin.y + ROUND((this.frame.size.height - imgRect.size.height) / 2.0);
+			
+			CGContextDrawImage(ctx, imgRect, { _image: this._img });
+			
+			if(this._font && this._font.loaded) {
+				CGContextSetFillColor(ctx, CGColorCreateGenericRGB(1, 1, 1, 1.0));
+				
+				ctx.font = this.fontSize + "px " + this.font;
+				ctx.textBaseline = "top";
+				
+				if(this._title.length) {
+					
+				}
+				
+				if(this._price.length) {
+					var textSize = this._priceMeasurements;
+					
+					var origin = CGPointMake(CGRectGetMinX(this.frame) + ROUND((CGRectGetWidth(this.frame) - textSize.width) / 2.0), CGRectGetMinY(this.frame) + ROUND((CGRectGetHeight(this.frame) - textSize.height) / 2.0));
+					
+					ctx.fillText(this.text, origin.x, origin.y - 2);
+				}
+				
+			}
+			
+			CGContextRestoreGState(ctx);
 		}
-*/
+	});
+	
+	var PartsOverlay = new Class({
+		Extends: __.Engine.Overlay,
+		
+		_tabs: [],
+		_activeTab: "",
+		_parts: [],
+		
+		_setActiveTab: function(text) {
+			var self = this;
+			
+			this._activeTab = text;
+			
+			this._parts = [];
+			
+			Parts[this._activeTab].forEach(function(part) {
+				var partButton = new PartButton();
+				partButton.price = part.cost;
+				partButton.title = part.name;
+				partButton.imgSrc = part.image;
+				self._parts.push(partButton);
+			});
+			
+			var numPartsPerRow = FLOOR(this.frame.size.width / 250);
+			var padding = FLOOR((this.frame.size.width - 250 * numPartsPerRow) / (numPartsPerRow + 1));
+			
+			var x = this.frame.origin.x + padding;
+			
+			this._parts.forEach(function(part) {
+				part.frame.origin.x = x;
+				x += 250 + padding;
+			});
+		},
+		
+		initialize: function(frame) {
+			this.parent(frame);
+			
+			var self = this;
+			
+			for(var type in Parts) {
+				var tab = new __.Engine.UI.Button();
+				tab.text = type;
+				tab.addEvent("click", function() {
+					self._setActiveTab(this.text);
+				});
+				
+				this._tabs.push(tab);
+			}
+			
+			var width = 125;
+			var maxWidth = width * this._tabs.length + (this._tabs.length - 1) * 10;
+			
+			var x = this.frame.origin.x + ROUND((this.frame.size.width - maxWidth) / 2.0);
+			
+			this._tabs.forEach(function(tab) {
+				tab.frame = CGRectMake(x, 10, width, 36);
+				
+				x += width + 10;
+			});
+			
+			this._setActiveTab(this._tabs[0].text);
+		},
+		
+		render: function(delta, ctx) {
+			this.parent(delta, ctx);
+			
+			this._tabs.forEach(function(button) {
+				button.render(ctx);
+			});
+			
+			this._parts.forEach(function(part) {
+				part.render(ctx);
+			})
+		},
+		
+		mouseDown: function(point) {
+			this._tabs.forEach(function(tab) {
+				tab.mouseDown(point);
+			});
+			
+			this._parts.forEach(function(part) {
+				part.mouseDown(point);
+			});
+		},
+		
+		mouseMove: function(point) {
+			this._tabs.forEach(function(tab) {
+				tab.mouseMove(point);
+			});
+			
+			this._parts.forEach(function(part) {
+				part.mouseMove(point);
+			});
+		},
+		
+		mouseUp: function(point) {
+			this._tabs.forEach(function(tab) {
+				tab.mouseUp(point);
+			});
+			
+			this._parts.forEach(function(part) {
+				part.mouseUp(point);
+			});
+		}
 	});
 	
 	window.addEventListener('load', function() {
-		$.Engine.run(new MainScreen());	
+		__.Engine.run(new MainScreen());	
 	}, false);
 })(window);

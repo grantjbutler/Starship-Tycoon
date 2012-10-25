@@ -1,71 +1,7 @@
-(function($) {
-	/* Simple JavaScript Inheritance
-	 * By John Resig http://ejohn.org/
-	 * MIT Licensed.
-	 */
-	// Inspired by base2 and Prototype
-	(function(){
-		var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
-		// The base Class implementation (does nothing)
-		this.Class = function(){};
-		
-		// Create a new Class that inherits from this class
-		Class.extend = function(prop) {
-			var _super = this.prototype;
-			
-			// Instantiate a base class (but only create the instance,
-			// don't run the init constructor)
-			initializing = true;
-			var prototype = new this();
-			initializing = false;
-			
-			// Copy the properties over onto the new prototype
-			for (var name in prop) {
-				// Check if we're overwriting an existing function
-				prototype[name] = typeof prop[name] == "function" && 
-				typeof _super[name] == "function" && fnTest.test(prop[name]) ?
-				(function(name, fn){
-					return function() {
-					var tmp = this._super;
-					
-					// Add a new ._super() method that is the same method
-					// but on the super-class
-					this._super = _super[name];
-					
-					// The method only need to be bound temporarily, so we
-					// remove it when we're done executing
-					var ret = fn.apply(this, arguments);		
-					this._super = tmp;
-					
-					return ret;
-					};
-				})(name, prop[name]) :
-				prop[name];
-			}
-			
-			// The dummy class constructor
-			function Class() {
-				// All construction is actually done in the init method
-				if ( !initializing && this.init )
-				this.init.apply(this, arguments);
-			}
-			
-			// Populate our constructed prototype object
-			Class.prototype = prototype;
-			
-			// Enforce the constructor to be what we expect
-			Class.prototype.constructor = Class;
-		
-			// And make this class extendable
-			Class.extend = arguments.callee;
-			
-			return Class;
-		};
-	})();
-	
-	$.Engine = {
+(function(__) {
+	__.Engine = {
 		_isRunning: false,
-		_startTime: $.mozAnimationStartTime || Date.now(),
+		_startTime: __.mozAnimationStartTime || Date.now(),
 		_currentScreen: null,
 		_currentOverlay: null,
 		
@@ -78,93 +14,94 @@
 		ctx: null,
 		
 		render: function(timestamp) {
-			var delta = timestamp - $.Engine._startTime;
+			var delta = timestamp - __.Engine._startTime;
 			
-			if($.Engine._currentScreen != null) {
-				$.Engine._currentScreen.update(delta);
+			if(__.Engine._currentScreen != null) {
+				__.Engine._currentScreen.update(delta);
 				
-				CGContextSaveGState($.Engine.ctx);
+				CGContextSaveGState(__.Engine.ctx);
 				
-				CGContextClearRect($.Engine.ctx, CGRectMake(0, 0, $.Engine.ctx.canvas.width, $.Engine.ctx.canvas.height));
+				CGContextClearRect(__.Engine.ctx, CGRectMake(0, 0, __.Engine.ctx.canvas.width, __.Engine.ctx.canvas.height));
 				
-				$.Engine._currentScreen.render(delta, $.Engine.ctx);
+				__.Engine._currentScreen.render(delta, __.Engine.ctx);
 				
-				CGContextRestoreGState($.Engine.ctx);
+				CGContextRestoreGState(__.Engine.ctx);
 			}
 			
-			if($.Engine._currentOverlay != null) {
-				$.Engine._currentOverlay.update(delta);
+			if(__.Engine._currentOverlay != null) {
+				__.Engine._currentOverlay.update(delta);
 				
-				CGContextSaveGState($.Engine.ctx);
+				CGContextSaveGState(__.Engine.ctx);
 				
-				$.Engine._currentOverlay.render(delta, $.Engine.ctx);
+				__.Engine._currentOverlay.render(delta, __.Engine.ctx);
 				
-				CGContextRestoreGState($.Engine.ctx);
+				CGContextRestoreGState(__.Engine.ctx);
 			}
 			
-			if($.Engine._renderFPS) {
+			if(__.Engine._renderFPS) {
 				// RENDER FPS.
 				var now = new Date;
-				var thisFrameFPS = 1000 / (now - $.Engine._lastUpdate);
-				$.Engine._fps += (thisFrameFPS - $.Engine._fps);// / fpsFilter;
-				$.Engine._lastUpdate = now;
+				var thisFrameFPS = 1000 / (now - __.Engine._lastUpdate);
+				__.Engine._fps += (thisFrameFPS - __.Engine._fps);// / fpsFilter;
+				__.Engine._lastUpdate = now;
 				
-				var ctx = $.Engine.ctx;
+				var ctx = __.Engine.ctx;
 				
-				ctx.save();
+				CGContextSaveGState(ctx);
 				
 				ctx.fillStyle = 'white';
-				ctx.fillText($.Engine._displayedFPS.toFixed(1) + "fps", 10, 10);
+				ctx.textBaseline = "top";
+				ctx.fillText(__.Engine._displayedFPS.toFixed(1) + "fps", 10, 5);
 				
-				ctx.restore();
+				CGContextRestoreGState(ctx);
 			}
 			
-			if($.Engine._isRunning) {
-				$.Engine.requestAnimationFrame.call($, $.Engine.render);
+			if(__.Engine._isRunning) {
+				__.Engine.requestAnimationFrame.call(__, __.Engine.render);
 			}
 		},
 		
 		run: function(baseScreen) {
-			if($.location != null) {
-				$.Engine._renderFPS = ($.location.hash == '#debug');
+			if(__.location != null) {
+				__.Engine._renderFPS = (__.location.hash == '#debug');
 			}
 			
-			$.Engine._isRunning = true;
+			__.Engine._isRunning = true;
 			
 			if(baseScreen != null) {
-				$.Engine.setScreen(baseScreen);
+				__.Engine.setScreen(baseScreen);
 			}
 			
-			$.Engine.canvas = document.getElementById('canvas');
-			$.Engine.ctx = $.Engine.canvas.getContext('2d');
-			$.Engine.ctx.DOMElement = $.Engine.canvas;
+			__.Engine.canvas = document.getElementById('canvas');
+			__.Engine.ctx = __.Engine.canvas.getContext('2d');
+			__.Engine.ctx.DOMElement = __.Engine.canvas;
 			
-			$.addEventListener('keydown', $.Engine.keyDown, false);
-			$.addEventListener('keyup', $.Engine.keyUp, false);
+			__.addEventListener('keydown', __.Engine.keyDown, false);
+			__.addEventListener('keyup', __.Engine.keyUp, false);
 			
-			$.Engine.canvas.addEventListener('mousedown', $.Engine.mouseDown, false);
-			$.Engine.canvas.addEventListener('mousemove', $.Engine.mouseMove, false);
-			$.Engine.canvas.addEventListener('mouseup', $.Engine.mouseUp, false);
+			__.Engine.canvas.addEventListener('mousedown', __.Engine.mouseDown, false);
+			__.Engine.canvas.addEventListener('mousemove', __.Engine.mouseMove, false);
+			__.Engine.canvas.addEventListener('mouseup', __.Engine.mouseUp, false);
 			
-			$.Engine.requestAnimationFrame.call($, $.Engine.render);
+			__.Engine.requestAnimationFrame.call(__, __.Engine.render);
 			
-			if($.Engine._renderFPS) {
+			if(__.Engine._renderFPS) {
 				setInterval(function() {
-					$.Engine._displayedFPS = $.Engine._fps;
+					__.Engine._displayedFPS = __.Engine._fps;
 				}, 500);
 			}
 		},
 		
 		setScreen: function(screen) {
-			$.Engine._currentScreen = screen;
+			__.Engine._currentScreen = screen;
 		},
 		
 		showOverlay: function(overlay) {
-			$.Engine._currentOverlay = overlay;
+			__.Engine._currentOverlay = overlay;
 		},
 		
 		hideOverlay: function() {
-			$.Engine._currentOverlay = null;
+			__.Engine._currentOverlay = null;
 		},
 		
 		keyDown: function(e) {
@@ -173,13 +110,15 @@
 				return;
 			}
 			
-			if($.Engine._currentScreen == null) {
+			if(__.Engine._currentScreen == null) {
 				return;
 			}
+			
+			var firstResponder = __.Engine._currentOverlay || __.Engine._currentScreen;
 		
-			if('keyDown' in $.Engine._currentScreen) {
+			if('keyDown' in firstResponder) {
 				for(var i = 0, len = e.char.length; i < len; i++) {
-					$.Engine._currentScreen.keyDown(e.char.charAt(i));
+					firstResponder.keyDown(e.char.charAt(i));
 				}
 			}
 			
@@ -193,13 +132,15 @@
 				return;
 			}
 			
-			if($.Engine._currentScreen == null) {
+			if(__.Engine._currentScreen == null) {
 				return;
 			}
 			
-			if('keyUp' in $.Engine._currentScreen) {
+			var firstResponder = __.Engine._currentOverlay || __.Engine._currentScreen;
+			
+			if('keyUp' in firstResponder) {
 				for(var i = 0, len = e.char.length; i < len; i++) {
-					$.Engine._currentScreen.keyUp(e.char.charAt(i));
+					firstResponder.keyUp(e.char.charAt(i));
 				}
 				
 				e.preventDefault();
@@ -213,22 +154,24 @@
 				return;
 			}
 			
-			if($.Engine._currentScreen == null) {
+			if(__.Engine._currentScreen == null) {
 				return;
 			}
+			
+			var firstResponder = __.Engine._currentOverlay || __.Engine._currentScreen;
 			
 			var origin = CGPointMake(e.clientX - e.target.offsetLeft, e.clientY - e.target.offsetTop);
 			
 			if(e.button == 2) { // Right click
-				if('rightMouseDown' in $.Engine._currentScreen) {
-					$.Engine._currentScreen.rightMouseDown(origin);
+				if('rightMouseDown' in firstResponder) {
+					firstResponder.rightMouseDown(origin);
 					
 					e.preventDefault();
 					e.stopPropagation();
 				}
 			} else if(e.button == 0) { // Left click
-				if('mouseDown' in $.Engine._currentScreen) {
-					$.Engine._currentScreen.mouseDown(origin);
+				if('mouseDown' in firstResponder) {
+					firstResponder.mouseDown(origin);
 					
 					e.preventDefault();
 					e.stopPropagation();
@@ -242,22 +185,24 @@
 				return;
 			}
 			
-			if($.Engine._currentScreen == null) {
+			if(__.Engine._currentScreen == null) {
 				return;
 			}
+			
+			var firstResponder = __.Engine._currentOverlay || __.Engine._currentScreen;
 			
 			var origin = CGPointMake(e.clientX - e.target.offsetLeft, e.clientY - e.target.offsetTop);
 			
 			if(e.button == 2) { // Right click
-				if('rightMouseMove' in $.Engine._currentScreen) {
-					$.Engine._currentScreen.rightMouseMove(origin);
+				if('rightMouseMove' in firstResponder) {
+					firstResponder.rightMouseMove(origin);
 					
 					e.preventDefault();
 					e.stopPropagation();
 				}
 			} else if(e.button == 0) { // Left click
-				if('mouseMove' in $.Engine._currentScreen) {
-					$.Engine._currentScreen.mouseMove(origin);
+				if('mouseMove' in firstResponder) {
+					firstResponder.mouseMove(origin);
 					
 					e.preventDefault();
 					e.stopPropagation();
@@ -271,22 +216,24 @@
 				return;
 			}
 			
-			if($.Engine._currentScreen == null) {
+			if(__.Engine._currentScreen == null) {
 				return;
 			}
+			
+			var firstResponder = __.Engine._currentOverlay || __.Engine._currentScreen;
 			
 			var origin = CGPointMake(e.clientX - e.target.offsetLeft, e.clientY - e.target.offsetTop);
 			
 			if(e.button == 2) { // Right click
-				if('rightMouseUp' in $.Engine._currentScreen) {
-					$.Engine._currentScreen.rightMouseUp(origin);
+				if('rightMouseUp' in firstResponder) {
+					firstResponder.rightMouseUp(origin);
 					
 					e.preventDefault();
 					e.stopPropagation();
 				}
 			} else if(e.button == 0) { // Left click
-				if('mouseUp' in $.Engine._currentScreen) {
-					$.Engine._currentScreen.mouseUp(origin);
+				if('mouseUp' in firstResponder) {
+					firstResponder.mouseUp(origin);
 					
 					e.preventDefault();
 					e.stopPropagation();
@@ -295,17 +242,17 @@
 		}
 	};
 	
-	if('mozRequestAnimationFrame' in $) {
-		$.Engine.requestAnimationFrame = $.mozRequestAnimationFrame;
-	} else if('msRequestAnimationFrame' in $) {
-		$.Engine.requestAnimationFrame = $.msRequestAnimationFrame;
-	} else if('webkitRequestAnimationFrame' in $) {
-		$.Engine.requestAnimationFrame = $.webkitRequestAnimationFrame;
+	if('mozRequestAnimationFrame' in __) {
+		__.Engine.requestAnimationFrame = __.mozRequestAnimationFrame;
+	} else if('msRequestAnimationFrame' in __) {
+		__.Engine.requestAnimationFrame = __.msRequestAnimationFrame;
+	} else if('webkitRequestAnimationFrame' in __) {
+		__.Engine.requestAnimationFrame = __.webkitRequestAnimationFrame;
 	} else {
-		$.Engine.requestAnimationFrame = $.requestAnimationFrame;
+		__.Engine.requestAnimationFrame = __.requestAnimationFrame;
 	}
 	
-	$.Engine.Screen = Class.extend({
+	__.Engine.Screen = new Class({
 		render: function(delta, ctx) {
 		
 		},
@@ -315,8 +262,12 @@
 		}
 	});
 	
-	$.Engine.Overlay = Class.extend({
+	__.Engine.Overlay = new Class({
 		frame: CGRectMakeZero(),
+		
+		initialize: function(frame) {
+			this.frame = frame || CGRectMakeZero();
+		},
 		
 		render: function(delta, ctx) {
 			if(CGRectIsEmpty(this.frame)) {
@@ -336,7 +287,8 @@
 		}
 	});
 	
-	$.Engine.Events = Class.extend({
+/*
+	__.Engine.Events = Class.extend({
 		_events: {},
 		
 		addEventListener: function(event, listener) {
@@ -364,18 +316,23 @@
 				return;
 			}
 			
+			var self = this;
+			
 			var args = Array.prototype.slice.call(arguments);
 			args.splice(0, 1);
 			
 			this._events[event].forEach(function(item) {
-				item.apply(this, args);
+				item.apply(self, args);
 			});
 		}
 	});
+*/
 	
-	$.Engine.UI = {};
+	__.Engine.UI = {};
 	
-	$.Engine.UI.Button = $.Engine.Events.extend({
+	__.Engine.UI.Button = new Class({
+		Implements: [Events],
+		
 		frame: CGRectMakeZero(),
 		
 		_text: "",
@@ -391,6 +348,46 @@
 		_buttonBG: null,
 		_buttonBGSelected: null,
 		
+		Attributes: {
+			font: {
+				set: function(newFont) {
+					this._font = new Font();
+					this._font.fontFamily = newFont;
+					this._font.src = this._font.fontFamily;
+					this._font.onload = (function() {
+						this._measureText();
+					}.bind(this));
+				},
+				get: function() {
+					return this._font.fontFamily;
+				}
+			},
+			
+			text: {
+				set: function(text) {
+					this._text = text;
+					
+					this._measureText();
+				},
+				
+				get: function() {
+					return this._text;
+				}
+			},
+			
+			fontSize: {
+				set: function(size) {
+					this._fontSize = size;
+					
+					this._measureText();
+				},
+				
+				get: function() {
+					return this._fontSize;
+				}
+			}
+		},
+		
 		_measureText: function() {
 			if(!this._font.loaded) {
 				return;
@@ -399,13 +396,10 @@
 			this._textMeasurements = this._font.measureText(this.text, this.fontSize);
 		},
 		
-		init: function(frame) {
+		initialize: function(frame) {
 			this.frame = frame || CGRectMakeZero();
 			
 			this.font = "Volter";
-			this._font.onload = function() {
-				this._measureText();
-			}.bind(this);
 			
 			this._buttonBG = new Image();
 			this._buttonBG.src = "img/game_button.png";
@@ -458,35 +452,11 @@
 		
 		mouseUp: function(point) {
 			if(this.highlighted && this._mouseDown) {
-				this.triggerEvent('clicked');
+				this.fireEvent('click');
 			}
 			
 			this._mouseDown = false;
 			this.highlighted = false;
 		}
 	});
-	
-	Object.defineProperty($.Engine.UI.Button.prototype, 'font', { set: function(newFont) {
-		this._font = new Font();
-		this._font.fontFamily = newFont;
-		this._font.src = this._font.fontFamily;
-	}, get: function() {
-		return this._font.fontFamily
-	}});
-	
-	Object.defineProperty($.Engine.UI.Button.prototype, 'text', { set: function(text) {
-		this._text = text;
-		
-		this._measureText();
-	}, get: function() {
-		return this._text;
-	}});
-	
-	Object.defineProperty($.Engine.UI.Button.prototype, 'fontSize', { set: function(size) {
-		this._fontSize = size;
-		
-		this._measureText();
-	}, get: function() {
-		return this._fontSize;
-	}});
 })(window);
