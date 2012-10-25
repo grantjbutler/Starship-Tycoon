@@ -326,15 +326,17 @@
 		_grid: [],
 		
 		initialize: function() {
+/*
 			this._menuButton = new __.Engine.UI.Button(CGRectMake(10, 10, 125, 35));
 			this._menuButton.text = "Menu";
+*/
 /*
 			this._menuButton.addEventListener('clicked', function() {
 				__.Engine.showOverlay(new MenuOverlay());
 			});
 */
 			
-			this._partsButton = new __.Engine.UI.Button(CGRectMake(10, 55, 125, 35));
+			this._partsButton = new __.Engine.UI.Button(CGRectMake(10, 10, 125, 35));
 			this._partsButton.text = "Parts";
 			this._partsButton.addEvent('click', function() {
 				if(__.Engine._currentOverlay instanceof PartsOverlay) {
@@ -348,7 +350,7 @@
 				}
 			});
 			
-			this._missionsButton = new __.Engine.UI.Button(CGRectMake(10, 100, 125, 35));
+			this._missionsButton = new __.Engine.UI.Button(CGRectMake(10, 55, 125, 35));
 			this._missionsButton.text = "Missions";
 			this._missionsButton.addEvent('click', function() {
 				if(__.Engine._currentOverlay instanceof MissionsOverlay) {
@@ -475,7 +477,7 @@
 			CGContextSetFillColor(ctx, CGColorCreateGenericRGB(0.85, 0.85, 0.85, 1.0));
 			CGContextFillRect(ctx, CGRectMake(0, 0, 145, ctx.canvas.height));
 			
-			this._menuButton.render(ctx);
+/* 			this._menuButton.render(ctx); */
 			this._partsButton.render(ctx);
 			this._missionsButton.render(ctx);
 			this._completeButton.render(ctx);
@@ -495,14 +497,14 @@
 		},
 		
 		mouseDown: function(point) {
-			this._menuButton.mouseDown(point);
+/* 			this._menuButton.mouseDown(point); */
 			this._partsButton.mouseDown(point);
 			this._missionsButton.mouseDown(point);
 			this._completeButton.mouseDown(point);
 		},
 		
 		mouseMove: function(point) {
-			this._menuButton.mouseMove(point);
+/* 			this._menuButton.mouseMove(point); */
 			this._partsButton.mouseMove(point);
 			this._missionsButton.mouseMove(point);
 			this._completeButton.mouseMove(point);
@@ -511,7 +513,7 @@
 		},
 		
 		mouseUp: function(point) {
-			this._menuButton.mouseUp(point);
+/* 			this._menuButton.mouseUp(point); */
 			this._partsButton.mouseUp(point);
 			this._missionsButton.mouseUp(point);
 			this._completeButton.mouseUp(point);
